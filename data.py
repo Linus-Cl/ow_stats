@@ -32,10 +32,11 @@ def load_data(use_local=True):
 
     if not df.empty:
         df.columns = df.columns.str.strip()
+
         if "Attack Def" in df.columns:
             df["Attack Def"] = df["Attack Def"].str.strip()
-        if "Datum" in df.columns:
-            df["Datum"] = pd.to_datetime(df["Datum"], errors="coerce")
+        if "Date" in df.columns:
+            df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
 
         if "Match ID" in df.columns:
             df["Match ID"] = pd.to_numeric(df["Match ID"], errors="coerce")

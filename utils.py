@@ -71,7 +71,7 @@ def get_hero_image_url(hero_name):
 
 def create_stat_card(title, image_url, main_text, sub_text):
     """
-    Erstellt eine einzelne formatierte Statistik-Karte.
+    Creates a single formatted statistics card.
     """
     return dbc.Col(
         dbc.Card(
@@ -115,31 +115,31 @@ def filter_data(df, player, season=None, month=None, year=None):
         temp = temp[temp["Season"] == season]
     else:
         if year is not None:
-            temp = temp[pd.to_numeric(temp["Jahr"], errors="coerce") == int(year)]
+            temp = temp[pd.to_numeric(temp["Year"], errors="coerce") == int(year)]
         if month is not None:
-            temp = temp[temp["Monat"] == month]
-    role_col, hero_col = f"{player} Rolle", f"{player} Hero"
+            temp = temp[temp["Month"] == month]
+    role_col, hero_col = f"{player} Role", f"{player} Hero"
     if role_col not in temp.columns or hero_col not in temp.columns:
         return pd.DataFrame()
-    temp = temp[temp[role_col].notna() & (temp[role_col] != "nicht dabei")]
+    temp = temp[temp[role_col].notna() & (temp[role_col] != "not present")]
     if temp.empty:
         return pd.DataFrame()
-    temp["Hero"], temp["Rolle"] = temp[hero_col].str.strip(), temp[role_col].str.strip()
+    temp["Hero"], temp["Role"] = temp[hero_col].str.strip(), temp[role_col].str.strip()
     return temp[temp["Hero"].notna() & (temp["Hero"] != "")]
 
 
 def calculate_winrate(data, group_col):
     if data.empty or not isinstance(group_col, str) or group_col not in data.columns:
-        return pd.DataFrame(columns=[group_col, "Win", "Lose", "Winrate", "Spiele"])
+        return pd.DataFrame(columns=[group_col, "Win", "Lose", "Winrate", "Games"])
     data[group_col] = data[group_col].astype(str).str.strip()
     data = data[data[group_col].notna() & (data[group_col] != "")]
     if data.empty:
-        return pd.DataFrame(columns=[group_col, "Win", "Lose", "Winrate", "Spiele"])
+        return pd.DataFrame(columns=[group_col, "Win", "Lose", "Winrate", "Games"])
     grouped = data.groupby([group_col, "Win Lose"]).size().unstack(fill_value=0)
     if "Win" not in grouped:
         grouped["Win"] = 0
     if "Lose" not in grouped:
         grouped["Lose"] = 0
-    grouped["Spiele"] = grouped["Win"] + grouped["Lose"]
-    grouped["Winrate"] = grouped["Win"] / grouped["Spiele"]
+    grouped["Games"] = grouped["Win"] + grouped["Lose"]
+    grouped["Winrate"] = grouped["Win"] / grouped["Games"]
     return grouped.reset_index().sort_values("Winrate", ascending=False)

@@ -41,11 +41,11 @@ def register_callbacks(app):
             for s in sorted(df["Season"].dropna().unique(), reverse=True)
         ]
         month_options = [
-            {"label": m, "value": m} for m in sorted(df["Monat"].dropna().unique())
+            {"label": m, "value": m} for m in sorted(df["Month"].dropna().unique())
         ]
         year_options = [
             {"label": str(int(y)), "value": int(y)}
-            for y in sorted(df["Jahr"].dropna().unique())
+            for y in sorted(df["Year"].dropna().unique())
         ]
         return season_options, month_options, year_options
 
@@ -57,7 +57,7 @@ def register_callbacks(app):
         other_players = [p for p in constants.players if p != selected_player]
         if not other_players:
             return None
-        switches = [html.Label("Vergleiche mit:", className="fw-bold")]
+        switches = [html.Label("Compare with:", className="fw-bold")]
         for player in other_players:
             switches.append(
                 dbc.Switch(
@@ -101,13 +101,13 @@ def register_callbacks(app):
             or (tab == "tab-map" and map_stat in ["winrate", "gamemode", "attackdef"])
         ):
             return False, ""
-        return True, "Nur relevant für Winrate-Statistiken"
+        return True, "Only relevant for winrate statistics"
 
     @app.callback(
         Output("history-list-container", "children"),
         Output("history-display-count-store", "data"),
         Input("load-more-history-button", "n_clicks"),
-        Input("player-dropdown-match-verlauf", "value"),
+        Input("player-dropdown-match-history", "value"),
         Input("hero-filter-dropdown-match", "value"),
         Input("dummy-output", "children"),
         State("history-display-count-store", "data"),
@@ -119,14 +119,14 @@ def register_callbacks(app):
         df = get_data()
         if df.empty:
             return [
-                dbc.Alert("Keine Match History verfügbar.", color="danger")
+                dbc.Alert("No match history available.", color="danger")
             ], {"count": 10}
 
         triggered_id = ctx.triggered_id if ctx.triggered_id else "dummy-output"
 
         # Reset count if filters change, otherwise increment
         if triggered_id in [
-            "player-dropdown-match-verlauf",
+            "player-dropdown-match-history",
             "hero-filter-dropdown-match",
             "dummy-output",
         ]:
@@ -143,7 +143,7 @@ def register_callbacks(app):
                 # Filter for games the player participated in
                 filtered_df = filtered_df[
                     filtered_df[player_hero_col].notna()
-                    & (filtered_df[player_hero_col] != "nicht dabei")
+                    & (filtered_df[player_hero_col] != "not present")
                 ]
 
                 # Filter by hero for that specific player
@@ -168,7 +168,7 @@ def register_callbacks(app):
         if games_to_show.empty:
             history_layout = [
                 dbc.Alert(
-                    "Für diese Filterkombination wurden keine Spiele gefunden.",
+                    "No matches found for this filter combination.",
                     color="info",
                 )
             ]
@@ -178,7 +178,7 @@ def register_callbacks(app):
     @app.callback(
         Output("hero-filter-dropdown-match", "options"),
         Output("hero-filter-dropdown-match", "value"),
-        Input("player-dropdown-match-verlauf", "value"),
+        Input("player-dropdown-match-history", "value"),
         Input("dummy-output", "children"),
         State("hero-filter-dropdown-match", "value"),
     )
@@ -195,7 +195,7 @@ def register_callbacks(app):
                 if hero_col in df.columns:
                     all_heroes.update(
                         df[
-                            df[hero_col].notna() & (df[hero_col] != "nicht dabei")
+                            df[hero_col].notna() & (df[hero_col] != "not present")
                         ][hero_col].unique()
                     )
             heroes = sorted(list(all_heroes))
@@ -206,7 +206,7 @@ def register_callbacks(app):
                 heroes = sorted(
                     df[
                         df[player_hero_col].notna()
-                        & (df[player_hero_col] != "nicht dabei")
+                        & (df[player_hero_col] != "not present")
                     ][player_hero_col].unique()
                 )
             else:
@@ -290,11 +290,11 @@ def register_callbacks(app):
         main_df = dataframes[player]
         title_suffix = f"({player}{' vs ' + ', '.join(active_compare_players) if active_compare_players else ''})"
         empty_fig = go.Figure(
-            layout={"title": "Keine Daten für die Auswahl verfügbar"}
+            layout={"title": "No data available for this selection"}
         )
-        stats_header = f"Gesamtstatistiken ({player})"
+        stats_header = f"Overall Statistics ({player})"
 
-        stats_container = html.Div("Keine Daten für die Auswahl verfügbar.")
+        stats_container = html.Div("No data available for this selection.")
         if not main_df.empty:
             total, wins = len(main_df), len(main_df[main_df["Win Lose"] == "Win"])
             losses, winrate = total - wins, wins / total if total > 0 else 0
@@ -305,7 +305,7 @@ def register_callbacks(app):
                     dbc.Col(
                         dbc.Card(
                             [
-                                dbc.CardHeader("Gesamtspiele"),
+                                dbc.CardHeader("Total Games"),
                                 dbc.CardBody(html.H4(f"{total}")),
                             ],
                             className="text-center h-100",
@@ -314,7 +314,7 @@ def register_callbacks(app):
                     dbc.Col(
                         dbc.Card(
                             [
-                                dbc.CardHeader("Gewonnen"),
+                                dbc.CardHeader("Wins"),
                                 dbc.CardBody(
                                     html.H4(f"{wins}", className="text-success")
                                 ),
@@ -325,7 +325,7 @@ def register_callbacks(app):
                     dbc.Col(
                         dbc.Card(
                             [
-                                dbc.CardHeader("Verloren"),
+                                dbc.CardHeader("Losses"),
                                 dbc.CardBody(
                                     html.H4(f"{losses}", className="text-danger")
                                 ),
@@ -354,67 +354,67 @@ def register_callbacks(app):
                 most_played_hero = main_df["Hero"].mode()[0]
                 hero_plays = main_df["Hero"].value_counts()[most_played_hero]
                 card = create_stat_card(
-                    "Meistgespielter Held",
+                    "Most Played Hero",
                     get_hero_image_url(most_played_hero),
                     most_played_hero,
-                    f"{hero_plays} Spiele",
+                    f"{hero_plays} Games",
                 )
             except (KeyError, IndexError):
                 card = create_stat_card(
-                    "Meistgespielter Held",
+                    "Most Played Hero",
                     get_hero_image_url(None),
                     "N/A",
-                    "Keine Daten",
+                    "No data",
                 )
             secondary_stat_cards.append(card)
             try:
                 hero_wr = calculate_winrate(main_df, "Hero")
-                hero_wr_filtered = hero_wr[hero_wr["Spiele"] >= min_games]
+                hero_wr_filtered = hero_wr[hero_wr["Games"] >= min_games]
                 best_hero = hero_wr_filtered.loc[hero_wr_filtered["Winrate"].idxmax()]
                 card = create_stat_card(
-                    "Beste Winrate (Held)",
+                    "Best Winrate (Hero)",
                     get_hero_image_url(best_hero["Hero"]),
                     best_hero["Hero"],
-                    f"{best_hero['Winrate']:.0%} ({best_hero['Spiele']} Spiele)",
+                    f"{best_hero['Winrate']:.0%} ({best_hero['Games']} Games)",
                 )
             except (KeyError, IndexError, ValueError):
                 card = create_stat_card(
-                    "Beste Winrate (Held)",
+                    "Best Winrate (Hero)",
                     get_hero_image_url(None),
                     "N/A",
-                    f"Min. {min_games} Spiele",
+                    f"Min. {min_games} games",
                 )
             secondary_stat_cards.append(card)
             try:
                 most_played_map = main_df["Map"].mode()[0]
                 map_plays = main_df["Map"].value_counts()[most_played_map]
                 card = create_stat_card(
-                    "Meistgespielte Map",
+                    "Most Played Map",
                     get_map_image_url(most_played_map),
                     most_played_map,
-                    f"{map_plays} Spiele",
+                    f"{map_plays} Games",
                 )
             except (KeyError, IndexError):
                 card = create_stat_card(
-                    "Meistgespielte Map", get_map_image_url(None), "N/A", "Keine Daten"
+                    "Most Played Map", get_map_image_url(None), "N/A", "No data"
                 )
             secondary_stat_cards.append(card)
             try:
                 map_wr = calculate_winrate(main_df, "Map")
-                map_wr_filtered = map_wr[map_wr["Spiele"] >= min_games]
+                map_wr_filtered = map_wr[map_wr["Games"] >= min_games]
                 best_map = map_wr_filtered.loc[map_wr_filtered["Winrate"].idxmax()]
                 card = create_stat_card(
-                    "Beste Winrate (Map)",
+                    "Best Winrate (Map)",
                     get_map_image_url(best_map["Map"]),
                     best_map["Map"],
-                    f"{best_map['Winrate']:.0%} ({best_map['Spiele']} Spiele)",
+                    f"{best_map['Winrate']:.0%} ({best_map['Games']} Games)",
                 )
             except (KeyError, IndexError, ValueError):
                 card = create_stat_card(
-                    "Beste Winrate (Map)",
+                    "Best Winrate (Map)",
                     get_map_image_url(None),
                     "N/A",
-                    f"Min. {min_games} Spiele",
+                    f"Min. {min_games} games",
                 )
             secondary_stat_cards.append(card)
 
@@ -432,13 +432,13 @@ def register_callbacks(app):
         ):
             if map_stat_type == "winrate":
                 map_data = calculate_winrate(main_df, "Map")
-                map_data = map_data[map_data["Spiele"] >= min_games]
+                map_data = map_data[map_data["Games"] >= min_games]
                 if not map_data.empty:
                     plot_df = main_df[
                         main_df["Attack Def"].isin(attack_def_modes)
                     ].copy()
                     plot_df["Mode"] = plot_df["Attack Def"].replace(
-                        {"Attack Attack": "Gesamt"}
+                        {"Attack Attack": "Overall"}
                     )
                     grouped = (
                         plot_df.groupby(["Map", "Mode", "Win Lose"])
@@ -449,8 +449,8 @@ def register_callbacks(app):
                         grouped["Win"] = 0
                     if "Lose" not in grouped:
                         grouped["Lose"] = 0
-                    grouped["Spiele"] = grouped["Win"] + grouped["Lose"]
-                    grouped["Winrate"] = grouped["Win"] / grouped["Spiele"]
+                    grouped["Games"] = grouped["Win"] + grouped["Lose"]
+                    grouped["Winrate"] = grouped["Win"] / grouped["Games"]
                     plot_data = grouped.reset_index()
                     plot_data = plot_data[plot_data["Map"].isin(map_data["Map"])]
                     if not plot_data.empty:
@@ -460,20 +460,20 @@ def register_callbacks(app):
                             y="Winrate",
                             color="Mode",
                             barmode="group",
-                            title=f"Map Winrates (Detailliert) - {player}",
+                            title=f"Map Winrates (Detailed) - {player}",
                             category_orders={
                                 "Map": map_data["Map"].tolist(),
-                                "Mode": ["Gesamt", "Attack", "Defense"],
+                                "Mode": ["Overall", "Attack", "Defense"],
                             },
-                            custom_data=["Spiele"],
+                            custom_data=["Games"],
                             color_discrete_map={
-                                "Gesamt": "lightslategrey",
+                                "Overall": "lightslategrey",
                                 "Attack": "#EF553B",
                                 "Defense": "#636EFA",
                             },
                         )
                         bar_fig.update_traces(
-                            hovertemplate="Winrate: %{y:.1%}<br>Spiele: %{customdata[0]}<extra></extra>"
+                            hovertemplate="Winrate: %{y:.1%}<br>Games: %{customdata[0]}<extra></extra>"
                         )
                         bar_fig.update_layout(yaxis_tickformat=".0%")
                     else:
@@ -483,28 +483,28 @@ def register_callbacks(app):
             elif map_stat_type == "plays":
                 if not main_df.empty:
                     plot_df = main_df.copy()
-                    plot_df["Seite"] = plot_df["Attack Def"].apply(
-                        lambda x: x if x in attack_def_modes else "Andere Modi"
+                    plot_df["Side"] = plot_df["Attack Def"].apply(
+                        lambda x: x if x in attack_def_modes else "Other Modes"
                     )
                     plays_by_side = (
-                        plot_df.groupby(["Map", "Seite"])
+                        plot_df.groupby(["Map", "Side"])
                         .size()
-                        .reset_index(name="Spiele")
+                        .reset_index(name="Games")
                     )
                     total_plays_map = (
                         main_df.groupby("Map")
                         .size()
-                        .reset_index(name="TotalSpiele")
-                        .sort_values("TotalSpiele", ascending=False)
+                        .reset_index(name="TotalGames")
+                        .sort_values("TotalGames", ascending=False)
                     )
                     bar_fig = px.bar(
                         plays_by_side,
                         x="Map",
-                        y="Spiele",
-                        color="Seite",
+                        y="Games",
+                        color="Side",
                         barmode="stack",
-                        title=f"Spiele pro Map (Detailliert) - {player}",
-                        labels={"Spiele": "Anzahl Spiele", "Seite": "Seite"},
+                        title=f"Games per Map (Detailed) - {player}",
+                        labels={"Games": "Number of Games", "Side": "Side"},
                         category_orders={"Map": list(total_plays_map["Map"])},
                         color_discrete_map={
                             "Attack": "#EF553B",
@@ -527,7 +527,7 @@ def register_callbacks(app):
             y_col = (
                 "Winrate"
                 if map_stat_type in ["winrate", "gamemode", "attackdef"]
-                else "Spiele"
+                else "Games"
             )
             for name, df_to_plot in dataframes.items():
                 if (
@@ -537,23 +537,23 @@ def register_callbacks(app):
                 ):
                     if y_col == "Winrate":
                         stats = calculate_winrate(df_to_plot, group_col)
-                        stats = stats[stats["Spiele"] >= min_games]
+                        stats = stats[stats["Games"] >= min_games]
                         if not stats.empty:
                             bar_fig.add_trace(
                                 go.Bar(
                                     x=stats[group_col],
                                     y=stats[y_col],
                                     name=name,
-                                    customdata=stats[["Spiele"]],
-                                    hovertemplate="<b>%{x}</b><br>Winrate: %{y:.1%}<br>Spiele: %{customdata[0]}<extra></extra>",
+                                    customdata=stats[["Games"]],
+                                    hovertemplate="<b>%{x}</b><br>Winrate: %{y:.1%}<br>Games: %{customdata[0]}<extra></extra>",
                                 )
                             )
                     else:
                         stats = (
                             df_to_plot.groupby(group_col)
                             .size()
-                            .reset_index(name="Spiele")
-                            .sort_values("Spiele", ascending=False)
+                            .reset_index(name="Games")
+                            .sort_values("Games", ascending=False)
                         )
                         if not stats.empty:
                             bar_fig.add_trace(
@@ -561,14 +561,14 @@ def register_callbacks(app):
                                     x=stats[group_col],
                                     y=stats[y_col],
                                     name=name,
-                                    hovertemplate="<b>%{x}</b><br>Spiele: %{y}<extra></extra>",
+                                    hovertemplate="<b>%{x}</b><br>Games: %{y}<extra></extra>",
                                 )
                             )
             bar_fig.update_layout(
-                title=f"{map_stat_type.title().replace('def', 'Def')} nach {group_col} {title_suffix}",
+                title=f"{map_stat_type.title().replace('def', 'Def')} by {group_col} {title_suffix}",
                 barmode="group",
                 yaxis_title=y_col,
-                legend_title="Spieler",
+                legend_title="Player",
             )
             if y_col == "Winrate":
                 bar_fig.update_layout(yaxis_tickformat=".0%")
@@ -588,17 +588,17 @@ def register_callbacks(app):
                 if pie_data_col == "Attack Def":
                     pie_data = pie_data[pie_data["Attack Def"].isin(attack_def_modes)]
                 pie_data = (
-                    pie_data.groupby(pie_data_col).size().reset_index(name="Spiele")
+                    pie_data.groupby(pie_data_col).size().reset_index(name="Games")
                 )
                 if not pie_data.empty:
                     pie_fig = px.pie(
                         pie_data,
                         names=pie_data_col,
-                        values="Spiele",
-                        title=f"Verteilung {pie_data_col}",
+                        values="Games",
+                        title=f"Distribution {pie_data_col}",
                     )
                     pie_fig.update_traces(
-                        hovertemplate="<b>%{label}</b><br>Spiele: %{value}<br>Anteil: %{percent}<extra></extra>"
+                        hovertemplate="<b>%{label}</b><br>Games: %{value}<br>Share: %{percent}<extra></extra>"
                     )
                 else:
                     pie_fig = empty_fig
@@ -616,28 +616,28 @@ def register_callbacks(app):
 
         def create_comparison_fig(stat_type, group_col):
             fig = go.Figure()
-            y_col = "Winrate" if stat_type == "winrate" else "Spiele"
+            y_col = "Winrate" if stat_type == "winrate" else "Games"
             for name, df_to_plot in dataframes.items():
                 if not df_to_plot.empty:
                     if y_col == "Winrate":
                         stats = calculate_winrate(df_to_plot, group_col)
-                        stats = stats[stats["Spiele"] >= min_games]
+                        stats = stats[stats["Games"] >= min_games]
                         if not stats.empty:
                             fig.add_trace(
                                 go.Bar(
                                     x=stats[group_col],
                                     y=stats[y_col],
                                     name=name,
-                                    customdata=stats[["Spiele"]],
-                                    hovertemplate="<b>%{x}</b><br>Winrate: %{y:.1%}<br>Spiele: %{customdata[0]}<extra></extra>",
+                                    customdata=stats[["Games"]],
+                                    hovertemplate="<b>%{x}</b><br>Winrate: %{y:.1%}<br>Games: %{customdata[0]}<extra></extra>",
                                 )
                             )
                     else:
                         stats = (
                             df_to_plot.groupby(group_col)
                             .size()
-                            .reset_index(name="Spiele")
-                            .sort_values("Spiele", ascending=False)
+                            .reset_index(name="Games")
+                            .sort_values("Games", ascending=False)
                         )
                         if not stats.empty:
                             fig.add_trace(
@@ -645,26 +645,26 @@ def register_callbacks(app):
                                     x=stats[group_col],
                                     y=stats[y_col],
                                     name=name,
-                                    hovertemplate="<b>%{x}</b><br>Spiele: %{y}<extra></extra>",
+                                    hovertemplate="<b>%{x}</b><br>Games: %{y}<extra></extra>",
                                 )
                             )
             fig.update_layout(
-                title=f"{stat_type.title()} nach {group_col} {title_suffix}",
+                title=f"{stat_type.title()} by {group_col} {title_suffix}",
                 barmode="group",
                 yaxis_title=y_col,
-                legend_title="Spieler",
+                legend_title="Player",
             )
             if y_col == "Winrate":
                 fig.update_layout(yaxis_tickformat=".0%")
             return fig if fig.data else empty_fig
 
         hero_fig = create_comparison_fig(hero_stat_type, "Hero")
-        role_fig = create_comparison_fig(role_stat_type, "Rolle")
+        role_fig = create_comparison_fig(role_stat_type, "Role")
         heatmap_fig = empty_fig
         if not main_df.empty:
             try:
                 pivot = main_df.pivot_table(
-                    index="Rolle",
+                    index="Role",
                     columns="Map",
                     values="Win Lose",
                     aggfunc=lambda x: (x == "Win").sum() / len(x)
@@ -682,15 +682,15 @@ def register_callbacks(app):
                         title=f"Winrate Heatmap – {player}",
                     )
                     heatmap_fig.update_traces(
-                        hovertemplate="<b>Map: %{x}</b><br><b>Rolle: %{y}</b><br><b>Winrate: %{z: .1%}</b><extra></extra>"
+                        hovertemplate="<b>Map: %{x}</b><br><b>Role: %{y}</b><br><b>Winrate: %{z: .1%}</b><extra></extra>"
                     )
             except Exception:
                 pass
         winrate_fig = go.Figure()
         for name, df_to_plot in dataframes.items():
-            if not df_to_plot.empty and "Datum" in df_to_plot.columns:
-                time_data = df_to_plot.dropna(subset=["Datum"]).copy()
-                time_data.sort_values("Datum", inplace=True, ascending=True)
+            if not df_to_plot.empty and "Date" in df_to_plot.columns:
+                time_data = df_to_plot.dropna(subset=["Date"]).copy()
+                time_data.sort_values("Date", inplace=True, ascending=True)
                 if hero_filter:
                     time_data = time_data[time_data["Hero"] == hero_filter]
                 if not time_data.empty:
@@ -708,14 +708,14 @@ def register_callbacks(app):
                         )
                     )
         winrate_fig.update_layout(
-            title=f"Winrate-Verlauf {title_suffix}",
+            title=f"Winrate History {title_suffix}",
             yaxis_tickformat=".0%",
             yaxis_title="Winrate",
-            xaxis_title="Spielnummer",
-            legend_title="Spieler",
+            xaxis_title="Game Number",
+            legend_title="Player",
         )
         winrate_fig.update_traces(
-            hovertemplate="<b>Spielnummer: %{x}</b><br><b>Winrate: %{y: .1%}</b><extra></extra>"
+            hovertemplate="<b>Game Number: %{x}</b><br><b>Winrate: %{y: .1%}</b><extra></extra>"
         )
         if not winrate_fig.data:
             winrate_fig = empty_fig
