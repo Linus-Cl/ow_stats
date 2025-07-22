@@ -1,0 +1,7 @@
+# ==== Google Doc Download url ==== #
+# Replace this with the export URL of your Google Sheet
+url = "YOUR_GOOGLE_SHEET_EXPORT_URL"
+
+# ==== List of all Players ==== #
+# Replace these with the names of the players in your sheet
+players = ["Player1", "Player2", "Player3"]
