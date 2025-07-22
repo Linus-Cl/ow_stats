@@ -2,7 +2,7 @@
 
 This is a web application built with Dash and Plotly to visualize and analyze Overwatch match data. The application allows users to filter data by player, season, month, and year, and provides various statistics on heroes, maps, and game modes.
 
-[![Dashboard Screenshot](dashboard_screen.png)](https://github.com/user-attachments/assets/ddcec897-25b5-4be9-b893-5dd56ed62e9e)
+https://github.com/user-attachments/assets/ddcec897-25b5-4be9-b893-5dd56ed62e9e
 
 ## Features
 
