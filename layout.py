@@ -7,7 +7,7 @@ import pandas as pd
 
 def generate_history_layout_simple(games_df):
     if games_df.empty:
-        return [dbc.Alert("Keine Match History verfügbar.", color="info")]
+        return [dbc.Alert("No match history available.", color="info")]
 
     history_items = []
     last_season = None
@@ -32,8 +32,8 @@ def generate_history_layout_simple(games_df):
         att_def = game.get("Attack Def")
         map_image_url = get_map_image_url(map_name)
         date_str = (
-            game["Datum"].strftime("%d.%m.%Y")
-            if pd.notna(game.get("Datum"))
+            game["Date"].strftime("%d.%m.%Y")
+            if pd.notna(game.get("Date"))
             else "Invalid Date"
         )
         result_color, result_text = (
@@ -50,8 +50,8 @@ def generate_history_layout_simple(games_df):
         player_list_items = []
         for p in constants.players:
             hero = game.get(f"{p} Hero")
-            if pd.notna(hero) and hero != "nicht dabei":
-                role = game.get(f"{p} Rolle", "N/A")
+            if pd.notna(hero) and hero != "not present":
+                role = game.get(f"{p} Role", "N/A")
                 hero_image_url = get_hero_image_url(hero)
 
                 player_list_items.append(
@@ -187,7 +187,7 @@ def get_layout():
                                 ),
                                 dbc.CardBody(
                                     [
-                                        dbc.Label("Spieler auswählen:"),
+                                        dbc.Label("Select Player:"),
                                         dcc.Dropdown(
                                             id="player-dropdown",
                                             options=[
@@ -199,29 +199,29 @@ def get_layout():
                                             className="mb-3",
                                         ),
                                         dbc.Label(
-                                            "Season auswählen (überschreibt Jahr/Monat):"
+                                            "Select Season (overwrites Year/Month):"
                                         ),
                                         dcc.Dropdown(
                                             id="season-dropdown",
-                                            placeholder="(keine ausgewählt)",
+                                            placeholder="(not selected)",
                                             className="mb-3",
                                             clearable=True,
                                         ),
-                                        dbc.Label("Jahr auswählen:"),
+                                        dbc.Label("Select Year:"),
                                         dcc.Dropdown(
                                             id="year-dropdown",
-                                            placeholder="(keine ausgewählt)",
+                                            placeholder="(not selected)",
                                             className="mb-3",
                                             clearable=True,
                                         ),
-                                        dbc.Label("Monat auswählen:"),
+                                        dbc.Label("Select Month:"),
                                         dcc.Dropdown(
                                             id="month-dropdown",
-                                            placeholder="(keine ausgewählt)",
+                                            placeholder="(not selected)",
                                             className="mb-3",
                                             clearable=True,
                                         ),
-                                        dbc.Label("Mindestanzahl Spiele:"),
+                                        dbc.Label("Minimum number of games:"),
                                         dcc.Slider(
                                             id="min-games-slider",
                                             min=1,
@@ -263,7 +263,7 @@ def get_layout():
                         dbc.Tabs(
                             [
                                 dbc.Tab(
-                                    label="Map & Mode Statistik",
+                                    label="Map & Mode Statistics",
                                     tab_id="tab-map",
                                     children=[
                                         dbc.Row(
@@ -279,19 +279,19 @@ def get_layout():
                                                         },
                                                         options=[
                                                             {
-                                                                "label": "Winrate nach Map",
+                                                                "label": "Winrate by Map",
                                                                 "value": "winrate",
                                                             },
                                                             {
-                                                                "label": "Spiele pro Map",
+                                                                "label": "Games per Map",
                                                                 "value": "plays",
                                                             },
                                                             {
-                                                                "label": "Gamemode Statistik",
+                                                                "label": "Gamemode Statistics",
                                                                 "value": "gamemode",
                                                             },
                                                             {
-                                                                "label": "Attack/Defense Statistik",
+                                                                "label": "Attack/Defense Statistics",
                                                                 "value": "attackdef",
                                                             },
                                                         ],
@@ -302,7 +302,7 @@ def get_layout():
                                                     html.Div(
                                                         dbc.Switch(
                                                             id="map-view-type",
-                                                            label="Detailliert",
+                                                            label="Detailed",
                                                             value=False,
                                                             className="mt-1",
                                                         ),
@@ -318,7 +318,7 @@ def get_layout():
                                     ],
                                 ),
                                 dbc.Tab(
-                                    label="Held Statistik",
+                                    label="Hero Statistics",
                                     tab_id="tab-hero",
                                     children=[
                                         dcc.Dropdown(
@@ -331,11 +331,11 @@ def get_layout():
                                             },
                                             options=[
                                                 {
-                                                    "label": "Winrate nach Held",
+                                                    "label": "Winrate by Hero",
                                                     "value": "winrate",
                                                 },
                                                 {
-                                                    "label": "Spiele pro Held",
+                                                    "label": "Games per Hero",
                                                     "value": "plays",
                                                 },
                                             ],
@@ -344,7 +344,7 @@ def get_layout():
                                     ],
                                 ),
                                 dbc.Tab(
-                                    label="Rollen Statistik",
+                                    label="Role Statistics",
                                     tab_id="tab-role",
                                     children=[
                                         dcc.Dropdown(
@@ -357,11 +357,11 @@ def get_layout():
                                             },
                                             options=[
                                                 {
-                                                    "label": "Winrate nach Rolle",
+                                                    "label": "Winrate by Role",
                                                     "value": "winrate",
                                                 },
                                                 {
-                                                    "label": "Spiele pro Rolle",
+                                                    "label": "Games per Role",
                                                     "value": "plays",
                                                 },
                                             ],
@@ -375,20 +375,20 @@ def get_layout():
                                     tab_id="tab-heatmap",
                                 ),
                                 dbc.Tab(
-                                    label="Winrate Verlauf",
+                                    label="Winrate History",
                                     tab_id="tab-trend",
                                     children=[
-                                        dbc.Label("Held filtern (optional):"),
+                                        dbc.Label("Filter Hero (optional):"),
                                         dcc.Dropdown(
                                             id="hero-filter-dropdown",
-                                            placeholder="Kein Held ausgewählt",
+                                            placeholder="No hero selected",
                                             className="mb-3",
                                         ),
                                         dcc.Graph(id="winrate-over-time"),
                                     ],
                                 ),
                                 dbc.Tab(
-                                    label="Match Verlauf",
+                                    label="Match History",
                                     tab_id="tab-history",
                                     children=[
                                         dbc.Card(
@@ -396,10 +396,10 @@ def get_layout():
                                                 dbc.Row([
                                                     dbc.Col(
                                                         [
-                                                            dbc.Label("Spieler filtern:"),
+                                                            dbc.Label("Filter Player:"),
                                                             dcc.Dropdown(
-                                                                id='player-dropdown-match-verlauf',
-                                                                options=[{'label': 'Alle Spieler', 'value': 'ALL'}] + [{'label': player, 'value': player} for player in constants.players],
+                                                                id='player-dropdown-match-history',
+                                                                options=[{'label': 'All Players', 'value': 'ALL'}] + [{'label': player, 'value': player} for player in constants.players],
                                                                 value='ALL',
                                                                 clearable=False,
                                                             ),
@@ -408,10 +408,10 @@ def get_layout():
                                                     ),
                                                     dbc.Col(
                                                         [
-                                                            dbc.Label("Held filtern:"),
+                                                            dbc.Label("Filter Hero:"),
                                                             dcc.Dropdown(
                                                                 id='hero-filter-dropdown-match',
-                                                                placeholder="Alle Helden",
+                                                                placeholder="All Heroes",
                                                                 clearable=True,
                                                             ),
                                                         ],
@@ -434,9 +434,9 @@ def get_layout():
                                                     dcc.Dropdown(
                                                         id="history-load-amount-dropdown",
                                                         options=[
-                                                            {"label": "10 weitere laden", "value": 10},
-                                                            {"label": "25 weitere laden", "value": 25},
-                                                            {"label": "50 weitere laden", "value": 50},
+                                                            {"label": "Load 10 more", "value": 10},
+                                                            {"label": "Load 25 more", "value": 25},
+                                                            {"label": "Load 50 more", "value": 50},
                                                         ],
                                                         value=10,
                                                         clearable=False,
